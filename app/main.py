@@ -5,7 +5,8 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.admin_auth import require_admin
+from app.auth.admin_auth import require_admin
+from app.auth.client import require_client_app
 from app.db import get_db
 from app.models import ClientApp
 from app.schemas.client_apps import (
@@ -122,3 +123,11 @@ async def set_client_app_status(
         created_at=client.created_at.isoformat(),
         updated_at=client.updated_at.isoformat(),
     )
+
+@app.get("/me")
+async def me(client: ClientApp = Depends(require_client_app)):
+    return {
+        "id": str(client.id),
+        "name": client.name,
+        "is_active": client.is_active,
+    }
